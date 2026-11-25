@@ -225,7 +225,9 @@ const inflight = new Map<GameId, Promise<string>>();
  */
 export async function ensurePack(game: GameId, opts: EnsurePackOptions = {}): Promise<string> {
   const e = env();
-  if (!e.packaged) return e.appRoot;
+  // Browser WebCar uses only the bundled HTTP client + core libraries.
+  // It never downloads a native game pack.
+  if (game === 'webcar' || !e.packaged) return e.appRoot;
   let job = inflight.get(game);
   if (!job) {
     job = install(e, game, opts).finally(() => inflight.delete(game));
