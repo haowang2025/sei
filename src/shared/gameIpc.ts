@@ -20,8 +20,8 @@ import type { StardewJoinTarget, StardewWorldState, StardewDashboardSnapshot } f
 
 /** The bot-backed games. Mirrors GAME_KINDS in src/bot/config.js (the bot is
  *  plain ESM JS and cannot import this file) — keep both lists in sync. */
-export type GameId = 'minecraft' | 'stardew' | 'dontstarve';
-export const GAME_IDS: readonly GameId[] = Object.freeze(['minecraft', 'stardew', 'dontstarve']);
+export type GameId = 'minecraft' | 'stardew' | 'dontstarve' | 'webcar';
+export const GAME_IDS: readonly GameId[] = Object.freeze(['minecraft', 'stardew', 'dontstarve', 'webcar']);
 
 export function isGameId(v: unknown): v is GameId {
   return typeof v === 'string' && (GAME_IDS as readonly string[]).includes(v);
@@ -70,7 +70,9 @@ export type WorldState =
   // M2 (260908): DST refines its member (worldName/day/season/phase/caves/
   // players on `open`, plus `not_installed`); `open` still carries `label`
   // for the generic consumers. See src/shared/dstIpc.ts.
-  | DstWorldState;
+  | DstWorldState
+  // The browser-based car computer is a local bridge (not an avatar).
+  | ({ game: 'webcar' } & GenericWorldState);
 
 /** All games' current world states, keyed by game (the world:get snapshot). */
 export type WorldStates = Partial<Record<GameId, WorldState>>;
@@ -84,7 +86,7 @@ export type WorldStates = Partial<Record<GameId, WorldState>>;
  * behind it (null = idle). Games add their own fields.
  */
 export interface GenericGameDashboardSnapshot {
-  game: 'stardew' | 'dontstarve';
+  game: 'stardew' | 'dontstarve' | 'webcar';
   characterId: string;
   ts: number;
   activity: string;
