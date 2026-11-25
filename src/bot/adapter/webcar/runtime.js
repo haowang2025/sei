@@ -83,7 +83,6 @@ export async function createRuntime(config, hooks) {
       void handle.stop();
     });
     // Recover missed poll counter on successful observations.
-    const originalObserve = client.observe;
     if (typeof client.onOnline === 'function') client.onOnline(() => { badPolls = 0; });
     client.start();
   } catch (err) {
