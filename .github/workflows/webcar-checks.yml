@@ -10,6 +10,8 @@ on:
       - 'src/main/games/webcar/**'
       - '.github/workflows/webcar-checks.yml'
 
+permissions:
+  contents: write
 jobs:
   webcar:
     runs-on: ubuntu-latest
@@ -24,6 +26,15 @@ jobs:
       - name: Install dependencies without Electron native rebuild
         run: npm ci --ignore-scripts
       - name: Type check full project
-        run: npm run typecheck
+        run: |
+          npm run typecheck > /tmp/webcar-tsc.txt 2>&1 || { cat /tmp/webcar-tsc.txt; cp /tmp/webcar-tsc.txt examples/webcar/TYPECHECK-DIAGNOSTICS.txt; exit 1; }
+      - name: Save typecheck diagnostics for debugging
+        if: failure() && github.event_name == 'push'
+        run: |
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git config user.name 'github-actions[bot]'
+          git add examples/webcar/TYPECHECK-DIAGNOSTICS.txt
+          git commit -m 'chore(webcar): temporary typecheck diagnostics [skip ci]'
+          git push origin HEAD:feat/webcar-infotainment-draft
       - name: Adapter and config regression tests
         run: npx vitest run src/bot/adapter/webcar/index.test.js src/bot/config.gameKinds.test.js
