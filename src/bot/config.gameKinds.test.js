@@ -11,8 +11,8 @@ const base = {
 const mc = { host: '127.0.0.1', auth: 'offline', username: 'Sui' }
 
 describe('ConfigSchema adapter.kind (game-adapters M0)', () => {
-  it('lists the three games', () => {
-    expect(GAME_KINDS).toEqual(['minecraft', 'stardew', 'dontstarve'])
+  it('lists supported game adapters', () => {
+    expect(GAME_KINDS).toEqual(['minecraft', 'stardew', 'dontstarve', 'webcar'])
   })
 
   it('defaults to minecraft and keeps the minecraft block mandatory for it', () => {
@@ -35,6 +35,18 @@ describe('ConfigSchema adapter.kind (game-adapters M0)', () => {
     expect(dst.adapter.dontstarve.prefab).toBe('wilson')
     expect(dst.adapter.dontstarve.cmd_hold_ms).toBe(400)
     expect(() => ConfigSchema.parse({ ...base, adapter: { kind: 'dontstarve' } })).toThrow(/adapter\.dontstarve is required/)
+  })
+
+  it('validates the local WebCar bridge secret and optional port', () => {
+    expect(() => ConfigSchema.parse({ ...base, adapter: { kind: 'webcar' } })).toThrow(/adapter\.webcar is required/)
+    expect(() => ConfigSchema.parse({ ...base, adapter: { kind: 'webcar', webcar: { username: 'Sei', token: 'short' } } })).toThrow()
+    const cfg = ConfigSchema.parse({
+      ...base, adapter: {
+        kind: 'webcar',
+        webcar: { username: 'Sei', token: 'a'.repeat(32) },
+      },
+    })
+    expect(cfg.adapter.webcar).toMatchObject({ host: '127.0.0.1', port: 61731, username: 'Sei' })
   })
 
   it('rejects an unknown kind', () => {
