@@ -68,7 +68,6 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     backseat: true,
     promptName: g.promptName,
   })),
-  { id: 'webcar', name: 'WebCar (experimental)', available: false },
   { id: 'focus', name: 'Focus', available: false },
 ];
 
