@@ -13,7 +13,7 @@ export function createWebCarClient({
   if (host !== '127.0.0.1' && host !== 'localhost') throw new Error('WebCar is loopback-only');
   const root = 'http://' + host + ':' + port;
   const headers = { 'x-sei-webcar-token': token, 'content-type': 'application/json' };
-  let current = null, seq = 0, timer = null, inFlight = false, eventHandler = () => {}, offlineHandler = () => {};
+  let current = null, seq = 0, timer = null, inFlight = false, eventHandler = () => {}, offlineHandler = () => {}, onlineHandler = () => {};
 
   async function get(path, opts = {}) {
     const controller = new AbortController();
@@ -50,6 +50,7 @@ export function createWebCarClient({
       }
     }
     seq = Math.max(seq, Number(response.seq) || 0);
+    onlineHandler();
     return current;
   }
 
@@ -58,6 +59,7 @@ export function createWebCarClient({
     observe,
     onEvent(fn) { eventHandler = fn; },
     onOffline(fn) { offlineHandler = fn; },
+    onOnline(fn) { onlineHandler = fn; },
     start() {
       if (timer) return;
       timer = setInterval(async () => {
