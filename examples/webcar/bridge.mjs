@@ -7,6 +7,7 @@
  */
 import http from 'node:http';
 import { randomUUID } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 
 export const PROTOCOL = 1;
 export const DEFAULT_PORT = 61731;
@@ -117,6 +118,19 @@ export async function createWebCarBridge({
       const pathname = new URL(req.url ?? '/', 'http://localhost').pathname;
       if (pathname === '/health' && req.method === 'GET') {
         return reply(res, 200, { protocol: PROTOCOL, gameOnline: online(), label: online() ? state.route : '' }, corsOrigin);
+      }
+      if (req.method === 'GET' && (pathname === '/demo' || pathname === '/browser-client.js')) {
+        const fileName = pathname === '/demo' ? 'demo.html' : 'browser-client.js';
+        const payload = await readFile(new URL('./' + fileName, import.meta.url));
+        res.writeHead(200, {
+          'content-type': pathname === '/demo' ? 'text/html; charset=utf-8' : 'text/javascript; charset=utf-8',
+          'cache-control': 'no-store',
+          'x-content-type-options': 'nosniff',
+          'x-frame-options': 'DENY',
+          'referrer-policy': 'no-referrer',
+        });
+        res.end(payload);
+        return;
       }
       if (req.headers['x-sei-webcar-token'] !== token) return reply(res, 401, { error: 'unauthorized' }, corsOrigin);
 
