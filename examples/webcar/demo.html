@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>WebCar × Sei | in-car computer demo</title>
+  <style>
+    body{background:#101820;color:#eaf0f4;font:16px system-ui,sans-serif;margin:0;min-height:100vh;display:grid;place-items:center}
+    main{width:min(560px,94vw);background:#182b35;padding:26px;border-radius:24px;box-sizing:border-box}
+    header{display:flex;justify-content:space-between;align-items:center}
+    h1{font-size:1.5rem;margin:0 0 6px}small{color:#9dafb8}
+    .telemetry{display:flex;gap:16px;align-items:end;margin:18px 0}
+    #speed{font-size:54px;font-variant-numeric:tabular-nums}
+    button,input,select{font:inherit;border:1px solid #48616c;border-radius:9px;padding:9px 12px;background:#263d47;color:#fff}
+    button{cursor:pointer}button:hover{background:#345462}
+    input{box-sizing:border-box;max-width:100%}
+    #token{width:100%}#log{height:180px;overflow:auto;background:#0b1820;border-radius:9px;padding:12px;white-space:pre-wrap;word-break:break-word}
+    .controls{display:flex;gap:9px;flex-wrap:wrap;margin:10px 0}
+    #message{flex:1;min-width:160px}
+  </style>
+</head>
+<body><main>
+  <header><div><h1>WEB/CAR · SEI</h1><small>Car-computer adapter demo (no passenger avatar)</small></div><small id="status">Offline</small></header>
+  <p><small>Paste the same SEI_WEBCAR_TOKEN supplied to the bridge and the Sei desktop process. Do not embed secrets in public HTML.</small></p>
+  <input id="token" type="password" placeholder="Local bridge session token" autocomplete="off">
+  <div class="controls"><button id="connect">Connect car computer</button><button id="next">Next station</button><button id="play">Pause / Play</button></div>
+  <div class="telemetry"><div><div id="speed">82</div><small>km/h</small></div><div><strong id="road">Route 37 · Night drive</strong><p id="radio">Night radio · FM</p></div></div>
+  <p id="display">Car computer ready.</p>
+  <div id="log" aria-live="polite">AI messages will appear here.</div>
+  <form id="chat" class="controls"><input id="message" placeholder="Talk to the car computer..." aria-label="Message"><button>Send</button></form>
+</main>
+<script type="module">
+  import { createWebCarClient } from '/browser-client.js';
+  const el = id => document.getElementById(id);
+  const stations = ['night', 'ambient', 'talk'];
+  let idx = 0, playing = true, client = null, speed = 82;
+  const write = (who, line) => {
+    const div = document.createElement('div');
+    div.textContent = who + ': ' + line; // never inject model text as HTML
+    el('log').append(div); el('log').scrollTop = el('log').scrollHeight;
+  };
+  function syncDisplay() {
+    el('speed').textContent = String(speed);
+    el('radio').textContent = stations[idx] + ' · ' + (playing ? 'Playing' : 'Off');
+  }
+  function next() { idx = (idx + 1) % stations.length; syncDisplay(); }
+  el('next').onclick = next;
+  el('play').onclick = () => { playing = !playing; syncDisplay(); };
+  el('connect').onclick = () => {
+    client?.stop();
+    client = createWebCarClient({
+      token: el('token').value,
+      observe: () => ({
+        worldId: 'demo-webcar-37', route: 'Route 37 · Night drive',
+        speedKph: speed, time: new Date().toLocaleTimeString(), engineOn: true,
+        radio: { station: stations[idx], track: 'Demo radio', playing },
+        display: el('display').textContent,
+      }),
+      async onAction(name, args) {
+        if (name === 'radio.next') next();
+        else if (name === 'radio.toggle') playing = !playing;
+        else if (name === 'radio.setStation') {
+          const chosen = stations.indexOf(args?.station);
+          if (chosen < 0) return { ok: false, detail: 'Unknown station' };
+          idx = chosen;
+        } else if (name === 'display.note') {
+          el('display').textContent = String(args.text).slice(0, 160);
+        } else return { ok: false, detail: 'Unsupported action' };
+        syncDisplay();
+        return { ok: true, detail: name + ' succeeded' };
+      },
+      onSay: line => write('Sei', line),
+      onStatus: (kind, detail) => { el('status').textContent = kind === 'error' ? 'Bridge error' : kind; if (kind === 'error') console.warn(detail); },
+    });
+    client.start();
+  };
+  el('chat').onsubmit = async ev => {
+    ev.preventDefault();
+    const text = el('message').value.trim(); if (!text || !client) return;
+    el('message').value = '';
+    try { await client.sendChat(text); write('Driver', text); }
+    catch (err) { write('System', String(err.message)); }
+  };
+  syncDisplay();
+</script></body></html>
