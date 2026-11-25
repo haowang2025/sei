@@ -160,12 +160,21 @@ const StardewAdapterSchema = z.object({
   }).optional().catch(undefined),
 })
 
+// A trusted local HTML5 game's car computer bridge. The bridge's token is
+// supplied by the developer and never sent to a remote server.
+const WebCarAdapterSchema = z.object({
+  host: z.enum(['127.0.0.1', 'localhost']).default('127.0.0.1'),
+  port: z.number().int().min(1).max(65535).default(61731),
+  token: z.string().min(24),
+  username: z.string().min(1).max(24),
+})
+
 // Game adapters (M0, 260908). `kind` selects which runtime the composer
 // (src/bot/index.js) dynamic-imports from src/bot/adapter/<kind>/runtime.js;
 // only that game's sub-tree is required. `dontstarve` is a passthrough
 // PLACEHOLDER until its adapter lands. Keep the member list in sync with
 // GAME_KINDS below and GameId in src/shared/gameIpc.ts.
-export const GAME_KINDS = ['minecraft', 'stardew', 'dontstarve']
+export const GAME_KINDS = ['minecraft', 'stardew', 'dontstarve', 'webcar']
 
 // Don't Starve Together (game-adapters M2, 260908). Built by
 // src/bot/adapter/dontstarve/runtime.js adapterConfigFrom from main's
@@ -201,7 +210,11 @@ const AdapterSchema = z.object({
   minecraft: MinecraftAdapterSchema.optional(),
   stardew: StardewAdapterSchema.optional(),
   dontstarve: DontStarveAdapterSchema.optional(),
+  webcar: WebCarAdapterSchema.optional(),
 }).superRefine((a, ctx) => {
+  if (a.kind === 'webcar' && !a.webcar) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['webcar'], message: 'adapter.webcar is required when adapter.kind is "webcar"' })
+  }
   if (a.kind === 'dontstarve' && !a.dontstarve) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['dontstarve'], message: 'adapter.dontstarve is required when adapter.kind is "dontstarve"' })
   }
