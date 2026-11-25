@@ -6,10 +6,11 @@
  * Run: SEI_WEBCAR_TOKEN=<random-secret-at-least-24-chars> node examples/webcar/bridge.mjs
  */
 import http from 'node:http';
+import { randomUUID } from 'node:crypto';
 
 export const PROTOCOL = 1;
 export const DEFAULT_PORT = 61731;
-const ACTIONS = new Set(['radio.next', 'radio.toggle', 'radio.setStation', 'display.note']);
+const ACTIONS = new Set(['radio.next', 'radio.toggle', 'radio.setStation', 'display.note', 'speak']);
 const MAX_JSON_BYTES = 32 * 1024;
 const MAX_PENDING = 16;
 const GAME_TTL_MS = 4000;
@@ -42,6 +43,10 @@ export function validateCommand(name, args) {
   if (name === 'radio.setStation') {
     return keys.length === 1 && typeof args.station === 'string' && /^[\w-]{1,64}$/.test(args.station)
       ? null : 'station must be an id of 1-64 letters, digits, _ or -';
+  }
+  if (name === 'speak') {
+    return keys.length === 1 && typeof args.text === 'string' && args.text.trim().length > 0 && args.text.length <= 400
+      ? null : 'speech must be 1-400 characters';
   }
   if (name === 'display.note') {
     return keys.length === 1 && typeof args.text === 'string' && args.text.trim().length > 0 && args.text.length <= 160
@@ -143,7 +148,7 @@ export async function createWebCarBridge({
         const invalid = validateCommand(name, args);
         if (invalid) return reply(res, 400, { ok: false, detail: invalid }, corsOrigin);
         if (pending.size >= MAX_PENDING) return reply(res, 429, { ok: false, detail: 'command queue full' }, corsOrigin);
-        const id = crypto.randomUUID();
+        const id = randomUUID();
         const result = await new Promise(resolve => {
           const timer = setTimeout(() => {
             pending.delete(id);
