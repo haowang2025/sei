@@ -30,7 +30,7 @@ export function createWebCarAdapter({ client, config, botUsername, logger = cons
   };
   register('radio_next', 'radio.next', z.object({}), 'Play the next radio station or song (the car computer decides which).');
   register('radio_toggle', 'radio.toggle', z.object({}), 'Toggle radio playback.');
-  register('radio_set_station', 'radio.setStation', z.object({ station: z.string().regex(/^[\\w-]{1,64}$/) }), 'Switch to an available station ID, only if the current car supports it.');
+  register('radio_set_station', 'radio.setStation', z.object({ station: z.string().regex(/^[\w-]{1,64}$/) }), 'Switch to an available station ID, only if the current car supports it.');
   register('display_note', 'display.note', z.object({ text: z.string().min(1).max(160) }), 'Show a short note on the infotainment display.');
 
   client.onEvent((evt) => {
