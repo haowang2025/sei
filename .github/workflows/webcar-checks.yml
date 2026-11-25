@@ -1,0 +1,29 @@
+name: WebCar adapter draft checks
+on:
+  push:
+    branches:
+      - feat/webcar-infotainment-draft
+  pull_request:
+    paths:
+      - 'examples/webcar/**'
+      - 'src/bot/adapter/webcar/**'
+      - 'src/main/games/webcar/**'
+      - '.github/workflows/webcar-checks.yml'
+
+jobs:
+  webcar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Bridge transport and permission tests
+        run: node --test examples/webcar/bridge.test.mjs
+      - name: Install dependencies without Electron native rebuild
+        run: npm ci --ignore-scripts
+      - name: Type check full project
+        run: npm run typecheck
+      - name: Adapter and config regression tests
+        run: npx vitest run src/bot/adapter/webcar/index.test.js src/bot/config.gameKinds.test.js
