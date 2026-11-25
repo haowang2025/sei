@@ -36,6 +36,8 @@ export const GAME_SURFACES: Record<GameId, GameSurface> = {
   minecraft: { LaunchPanel: McLaunchPanel, DashboardPanel: McDashboardPanel },
   stardew: withGame('stardew'),
   dontstarve: withGame('dontstarve'),
+  // Developer-only car-computer adapter; not shown in the normal game picker.
+  webcar: withGame('webcar'),
 };
 
 export function registerGameSurface(game: GameId, surface: GameSurface): void {
