@@ -8,16 +8,18 @@ import { ADAPTER_INTERFACE_VERSION } from '../../brain/types.js';
 
 export function createWebCarAdapter({ client, config, botUsername, logger = console }) {
   if (!client || !config) throw new Error('WebCar client and config required');
-  const registry = createRegistry();
+  // One closed Zod action registry. Brain-facing names map to namespaced
+  // bridge verbs; the game retains final say over execution.
+  const actions = createRegistry();
   let handlers = null;
   let paused = false;
   let watching = false;
   let actionName = null;
   let emitDashboard = null;
-  const register = (name, schema, description) => {
-    registry.register(name, schema, async (args, _bot, ctx) => {
+  const register = (name, wireName, schema, description) => {
+    actions.register(name, schema, async (args, _bot, ctx) => {
       try {
-        const outcome = await client.command(name, args, { signal: ctx?.signal });
+        const outcome = await client.command(wireName, args, { signal: ctx?.signal });
         if (!outcome.ok) return 'failed: ' + String(outcome.detail || 'game refused action');
         try { await client.observe(); } catch {}
         return String(outcome.detail || 'done');
@@ -26,33 +28,10 @@ export function createWebCarAdapter({ client, config, botUsername, logger = cons
       }
     }, description);
   };
-  register('radio_next', z.object({}), 'Play the next radio station or song (the car computer decides which).');
-  register('radio_toggle', z.object({}), 'Toggle radio playback.');
-  register('radio_set_station', z.object({ station: z.string().regex(/^[\w-]{1,64}$/) }), 'Switch to an available station ID, only if the current car supports it.');
-  register('display_note', z.object({ text: z.string().min(1).max(160) }), 'Show a short note on the infotainment display.');
-  // Use LLM-friendly action names, while the bridge uses namespaced API verbs.
-  const translate = { radio_next: 'radio.next', radio_toggle: 'radio.toggle', radio_set_station: 'radio.setStation', display_note: 'display.note' };
-  // Registry handlers receive the translated command through the facade.
-  const facade = {
-    command: (name, args, opts) => client.command(translate[name] ?? name, args, opts),
-  };
-  // Rebuild the register handlers against the translated facade instead of
-  // teaching the game the brain's tool names.
-  const actions = createRegistry();
-  for (const name of registry.list()) {
-    actions.register(name, registry.schema(name),
-      async (args, _bot, ctx) => {
-        try {
-          const out = await facade.command(name, args, { signal: ctx?.signal });
-          if (!out.ok) return 'failed: ' + String(out.detail || 'game refused action');
-          try { await client.observe(); } catch {}
-          return String(out.detail || 'done');
-        } catch (err) {
-          return ctx?.signal?.aborted ? 'aborted' : 'failed: ' + String(err?.message ?? err);
-        }
-      },
-      registry.description(name));
-  }
+  register('radio_next', 'radio.next', z.object({}), 'Play the next radio station or song (the car computer decides which).');
+  register('radio_toggle', 'radio.toggle', z.object({}), 'Toggle radio playback.');
+  register('radio_set_station', 'radio.setStation', z.object({ station: z.string().regex(/^[\\w-]{1,64}$/) }), 'Switch to an available station ID, only if the current car supports it.');
+  register('display_note', 'display.note', z.object({ text: z.string().min(1).max(160) }), 'Show a short note on the infotainment display.');
 
   client.onEvent((evt) => {
     if (evt.type === 'chat' && typeof evt.text === 'string') {
