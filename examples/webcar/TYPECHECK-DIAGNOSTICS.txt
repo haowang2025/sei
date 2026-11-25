@@ -2,14 +2,5 @@
 > sei@0.6.10 typecheck
 > tsc --build
 
-src/main/chat/chatService.ts(353,84): error TS7053: Element implicitly has an 'any' type because expression of type 'GameId' can't be used to index type 'Readonly<{ minecraft: "Minecraft"; stardew: "Stardew Valley"; dontstarve: "Don't Starve Together"; }>'.
-  Property 'webcar' does not exist on type 'Readonly<{ minecraft: "Minecraft"; stardew: "Stardew Valley"; dontstarve: "Don't Starve Together"; }>'.
-src/renderer/src/lib/botErrorRouting.ts(75,14): error TS2741: Property 'webcar' is missing in type '{ minecraft: Partial<Record<ErrorClass, Route>>; stardew: Partial<Record<ErrorClass, Route>>; dontstarve: { ...; }; }' but required in type 'Record<GameId, Partial<Record<ErrorClass, Route>>>'.
-src/renderer/src/lib/gameLaunch.ts(91,14): error TS2322: Type 'GameId' is not assignable to type 'LaunchGameId'.
-  Type '"webcar"' is not assignable to type 'LaunchGameId'.
-src/renderer/src/lib/gameSurfaces.tsx(35,14): error TS2741: Property 'webcar' is missing in type '{ minecraft: { LaunchPanel: ({ characterId }: McLaunchPanelProps) => React.ReactElement; DashboardPanel: ({ characterId }: McDashboardPanelProps) => React.ReactElement; }; stardew: GameSurface; dontstarve: GameSurface; }' but required in type 'Record<GameId, GameSurface>'.
-src/renderer/src/lib/homeNextStep.ts(138,29): error TS2322: Type 'GameId' is not assignable to type 'LaunchGameId'.
-  Type '"webcar"' is not assignable to type 'LaunchGameId'.
-src/renderer/src/lib/homeNextStep.ts(138,85): error TS2345: Argument of type 'GameId' is not assignable to parameter of type 'LaunchGameId'.
-  Type '"webcar"' is not assignable to type 'LaunchGameId'.
-src/renderer/src/lib/summonFlow.ts(230,14): error TS2741: Property 'webcar' is missing in type '{ minecraft: SummonFlow; stardew: SummonFlow; dontstarve: SummonFlow; }' but required in type 'Record<GameId, SummonFlow>'.
+src/renderer/src/lib/gameLaunch.ts(221,5): error TS2322: Type 'LaunchGameId' is not assignable to type '"stardew" | "dontstarve" | "minecraft" | "chess" | "draw" | "backseat"'.
+  Type '"webcar"' is not assignable to type '"stardew" | "dontstarve" | "minecraft" | "chess" | "draw" | "backseat"'.
