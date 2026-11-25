@@ -60,6 +60,12 @@ export interface GamePackDescriptor {
 }
 
 export const GAME_PACKS: Record<GameId, GamePackDescriptor> = {
+  // WebCar needs no downloadable native mod or dependency pack; its
+  // HTTP bridge is launched independently in the developer environment.
+  webcar: {
+    id: 'webcar', name: 'WebCar', platformSpecific: false,
+    sizeHintBytes: 0, requiredPaths: [],
+  },
   minecraft: {
     id: 'minecraft',
     name: 'Minecraft',
