@@ -75,6 +75,7 @@ const GENERIC_ROUTES: Partial<Record<ErrorClass, Route>> = {
 export const BOT_ERROR_ROUTES: Record<GameId, Partial<Record<ErrorClass, Route>>> = {
   minecraft: MINECRAFT_ROUTES,
   stardew: GENERIC_ROUTES,
+  webcar: GENERIC_ROUTES,
   // Don't Starve Together (M2): the generic modal carries the DST copies too.
   dontstarve: {
     ...GENERIC_ROUTES,
