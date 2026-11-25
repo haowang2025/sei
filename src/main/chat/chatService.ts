@@ -350,7 +350,7 @@ async function honorNextStep(characterId: string, input: unknown, liveGame: Game
   const game = parsePlanGameField(fields?.next_time_game);
   const result = { hook: true, line: normalizePlayerLine(fields?.next_time_for_player), game };
   if (!turnMayWrite(characterId, 'next_time')) return result;
-  const label = game === 'none' ? undefined : game ? PLAN_GAMES[game] : liveGame ? PLAN_GAMES[liveGame] : undefined;
+  const label = game === 'none' ? undefined : game ? PLAN_GAMES[game] : liveGame ? (liveGame === 'webcar' ? 'WebCar' : PLAN_GAMES[liveGame]) : undefined;
   try {
     const written = await appendMemory(path.join(paths.memoryDir(characterId), 'MEMORY.md'), nextStepMemoryLine(step, label), undefined, {
       section: 'app',
