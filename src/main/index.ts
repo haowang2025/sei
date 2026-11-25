@@ -32,6 +32,7 @@ import { registerGameModule, getGameModule, listGameModules } from './games';
 import { createMinecraftGameModule } from './games/minecraft';
 import { createDontStarveGameModule } from './games/dontstarve';
 import { createStardewGameModule } from './games/stardew';
+import { createWebCarGameModule } from './games/webcar';
 import type { GameId, WorldState, WorldStates } from '../shared/gameIpc';
 import { isCallActive, wasCallRecentlyActive, activeCallIds, clearAllCalls, liveCallsNow } from './voice/callState';
 import { initCallOverlay, closeCallOverlay } from './callOverlay';
@@ -146,6 +147,8 @@ registerGameModule(dontstarveModule);
 // Registering does not light the picker tile (GAME_CATALOG.available flips
 // after the live checklist).
 registerGameModule(createStardewGameModule({ logger }));
+// Experimental HTML5 car-computer adapter; not exposed in the game catalog yet.
+registerGameModule(createWebCarGameModule());
 let watchersRunning = false;
 let supervisor: ReturnType<typeof createBotSupervisor> | null = null;
 // Loopback HTTP server serving persona skin PNGs to
