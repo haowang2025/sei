@@ -24,6 +24,8 @@ import JSZip from 'jszip';
  * stardewIpc.ts STARDEW_MOD_PACK_PATH, the bot's require of mineflayer).
  */
 export const REQUIRED_PAYLOAD = {
+  webcar: [], // No downloadable payload: bundled adapter and external local bridge.
+
   minecraft: ['node_modules/mineflayer/package.json', 'node_modules/minecraft-data/package.json'],
   stardew: ['assets/stardew-mod/SeiCompanion/SeiCompanion.dll', 'assets/stardew-mod/SeiCompanion/manifest.json'],
   dontstarve: ['assets/dst-mod/sei/modinfo.lua', 'assets/dst-mod/sei/modmain.lua'],
