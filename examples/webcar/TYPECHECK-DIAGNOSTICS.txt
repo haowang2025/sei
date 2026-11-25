@@ -1,6 +1,0 @@
-
-> sei@0.6.10 typecheck
-> tsc --build
-
-src/renderer/src/lib/gameLaunch.ts(221,5): error TS2322: Type 'LaunchGameId' is not assignable to type '"stardew" | "dontstarve" | "minecraft" | "chess" | "draw" | "backseat"'.
-  Type '"webcar"' is not assignable to type '"stardew" | "dontstarve" | "minecraft" | "chess" | "draw" | "backseat"'.
